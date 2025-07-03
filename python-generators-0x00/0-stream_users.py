@@ -1,5 +1,18 @@
 from itertools import islice
-from stream_users import stream_users
+import csv
+import os
+
+
+def stream_users():
+    """Generator that yields users from a CSV file line by line."""
+    # Get path relative to this file
+    current_dir = os.path.dirname(__file__)
+    file_path = os.path.join(current_dir, "user_data.csv")
+
+    with open(file_path, newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            yield {"name": row["name"], "email": row["email"], "age": int(row["age"])}
 
 #iterate over the generator function and print the first 6 rows
 for user in islice(stream_users(), 6):

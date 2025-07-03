@@ -29,4 +29,3 @@ def batch_processing(batch_size):
 
 batch_size = 50
 batch_processing(batch_size)
-

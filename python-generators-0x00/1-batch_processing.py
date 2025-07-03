@@ -1,9 +1,9 @@
 import csv
 import os
 
-
-def stream_users_in_batches(batch_size):
-    """Simulates: SELECT * FROM user_data"""
+# Simulate: SELECT * FROM user_data
+def select_all_from_user_data(batch_size):
+    """Simulates SELECT * FROM user_data in batches."""
     current_dir = os.path.dirname(__file__)
     file_path = os.path.join(current_dir, "user_data.csv")
 
@@ -18,19 +18,16 @@ def stream_users_in_batches(batch_size):
                 batch = []
         if batch:
             yield batch
+    return  # Ends generator explicitly (optional)
 
+# Simulate: SELECT * FROM user_data WHERE age > 25
 def batch_processing(batch_size):
-    """
-    Simulates:
-    SELECT * FROM user_data
-    WHERE age > 25
-    """
-    for batch in stream_users_in_batches(batch_size):
+    for batch in select_all_from_user_data(batch_size):
         filtered = (user for user in batch if user["age"] > 25)
         print(f"Filtered users over 25 from batch of {len(batch)}:")
         for user in filtered:
             print(user)
+    return "Batch processing complete."  # Explicit return added
 
 batch_size = 50
 batch_processing(batch_size)
-

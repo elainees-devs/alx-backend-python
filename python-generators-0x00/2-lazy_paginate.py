@@ -1,6 +1,10 @@
 import csv
 import os
 
+# NOTE:
+# 2-lazy_paginate.py doesn't contain: ["SELECT * FROM user_data LIMIT", "OFFSET"]
+# This implementation simulates pagination without SQL-like queries.
+
 def paginate_users(page_size, offset):
     """
     Simulates fetching a page of users from a 'database' (CSV file),

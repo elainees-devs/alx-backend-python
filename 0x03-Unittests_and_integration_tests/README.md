@@ -1,12 +1,13 @@
----
-
-# Unit Tests for `utils` Module
+# Unit Tests for `utils` and `client` Modules
 
 ## Description
 
-This repository contains unit tests for utility functions found in the `utils` module. These tests validate the behavior of nested dictionary access and HTTP JSON fetching functions.
+This repository contains unit tests for utility functions in the `utils` module and the `GithubOrgClient` class in the `client` module.
+These tests validate nested dictionary access, HTTP JSON fetching, and GitHub organization data handling with license filtering.
 
 ---
+
+## ✅ `access_nested_map`
 
 ## ✅ `access_nested_map`
 
@@ -53,7 +54,6 @@ def test_access_nested_map_exception(self, nested_map, path):
 ```
 
 ---
-
 ## 🌐 `get_json`
 
 ### Purpose
@@ -95,12 +95,76 @@ def test_get_json(self, test_url, test_payload, mock_get):
 
 ---
 
-## 🧪 Running the Tests
+## 🐙 `GithubOrgClient` (`client.py`)
 
-```bash
-python3 -m unittest test_utils.py
+### Purpose
+
+To test the `GithubOrgClient` class, which interacts with the GitHub API to retrieve organization data and list public repositories, optionally filtered by license.
+
+### Test Cases
+
+| Method              | What is tested                                                                 |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `org`               | That it returns correct organization data from the API (mocked).               |
+| `_public_repos_url` | That it correctly extracts the repos URL from the org payload.                 |
+| `repos_payload`     | That it returns the JSON list of repos from the repos URL (mocked).            |
+| `public_repos`      | That it correctly lists repo names, and filters repos when a license is given. |
+| `has_license`       | That it returns True only when the repo contains the expected license key.     |
+
+---
+
+### Mocking Strategy
+
+* Patch `utils.get_json` to avoid real API calls.
+* Patch/memoize properties when necessary to test isolated logic.
+* Use `parameterized` to test `has_license` with multiple scenarios.
+
+---
+
+### Example Test Implementation
+
+```python
+from unittest.mock import patch, PropertyMock
+from parameterized import parameterized
+
+class TestGithubOrgClient(unittest.TestCase):
+    @patch('client.get_json')
+    def test_org(self, mock_get_json):
+        mock_get_json.return_value = {"login": "test-org"}
+        client = GithubOrgClient("test-org")
+        self.assertEqual(client.org, {"login": "test-org"})
+        mock_get_json.assert_called_once_with("https://api.github.com/orgs/test-org")
+
+    @patch('client.get_json')
+    def test_public_repos(self, mock_get_json):
+        mock_get_json.side_effect = [
+            {"repos_url": "https://api.github.com/orgs/test-org/repos"},
+            [
+                {"name": "repo1", "license": {"key": "mit"}},
+                {"name": "repo2", "license": {"key": "apache-2.0"}},
+            ],
+        ]
+        client = GithubOrgClient("test-org")
+        repos = client.public_repos()
+        self.assertIn("repo1", repos)
+        self.assertIn("repo2", repos)
+
+    @parameterized.expand([
+        ({"license": {"key": "mit"}}, "mit", True),
+        ({"license": {"key": "apache-2.0"}}, "mit", False),
+        ({}, "mit", False),
+    ])
+    def test_has_license(self, repo, license_key, expected):
+        self.assertEqual(GithubOrgClient.has_license(repo, license_key), expected)
 ```
 
 ---
 
+## 🧪 Running the Tests
 
+```bash
+python3 -m unittest test_utils.py
+python3 -m unittest test_client.py
+```
+
+---

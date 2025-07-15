@@ -19,15 +19,12 @@ class TestGithubOrgClient(unittest.TestCase):
     @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
         """Test that GithubOrgClient.org returns the correct value"""
-        # Test setup
         expected_payload = {"login": org_name, "id": 123}
         mock_get_json.return_value = expected_payload
 
-        # Execute
         client = GithubOrgClient(org_name)
         result = client.org
 
-        # Verify
         self.assertEqual(result, expected_payload)
         mock_get_json.assert_called_once_with(
             f"https://api.github.com/orgs/{org_name}"
@@ -36,27 +33,26 @@ class TestGithubOrgClient(unittest.TestCase):
     @patch("client.GithubOrgClient.org", new_callable=PropertyMock)
     def test_public_repos_url(self, mock_org):
         """Test that _public_repos_url returns correct value from org payload"""
-        # Test setup
         test_url = "https://api.github.com/orgs/google/repos"
         mock_org.return_value = {"repos_url": test_url}
 
-        # Execute and verify
         client = GithubOrgClient("google")
         self.assertEqual(client._public_repos_url, test_url)
 
     @patch('client.get_json')
     def test_public_repos(self, mock_get_json):
         """Test public_repos returns expected list of repos"""
-        # Mocked return payload from get_json
         mock_payload = [
-        {"name": "repo1"},
-        {"name": "repo2"},
-        {"name": "repo3"},
-    ]
+            {"name": "repo1"},
+            {"name": "repo2"},
+            {"name": "repo3"},
+        ]
         mock_get_json.return_value = mock_payload
 
-        # Use context manager to patch _public_repos_url
-        with patch("client.GithubOrgClient._public_repos_url", new_callable=PropertyMock) as mock_url:
+        with patch(
+            "client.GithubOrgClient._public_repos_url",
+            new_callable=PropertyMock
+        ) as mock_url:
             mock_url.return_value = "https://api.github.com/orgs/google/repos"
 
             client = GithubOrgClient("google")
@@ -64,7 +60,10 @@ class TestGithubOrgClient(unittest.TestCase):
 
             self.assertEqual(result, ["repo1", "repo2", "repo3"])
             mock_url.assert_called_once()
-            mock_get_json.assert_called_once_with("https://api.github.com/orgs/google/repos")
+            mock_get_json.assert_called_once_with(
+                "https://api.github.com/orgs/google/repos"
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

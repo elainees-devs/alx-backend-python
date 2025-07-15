@@ -1,26 +1,27 @@
-import sqlite3
+# execute_query.py
 
-# Define the custom context manager
-class DatabaseConnection:
-    def __init__(self, db_name):
+from db_connection import DatabaseConnection
+
+class ExecuteQuery:
+    def __init__(self, db_name, query, params=None):
         self.db_name = db_name
-        self.connection = None
+        self.query = query
+        self.params = params or ()
+        self.results = None
 
     def __enter__(self):
-        print("Opening database connection...")
-        self.connection = sqlite3.connect(self.db_name)
-        return self.connection  # Makes the connection object available in the with block
+        with DatabaseConnection(self.db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute(self.query, self.params)
+            self.results = cursor.fetchall()
+        return self.results
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.connection:
-            self.connection.close()
-            print("Database connection closed.")
+        pass
 
-with DatabaseConnection("users.db") as conn:
-    cursor = conn.cursor()
-    # Create a table if it doesn't exist
-    cursor.execute('''
-        SELECT * FROM users
-    ''')
-    users = cursor.fetchall()
-    print("Users:", users)  
+# Usage example
+query = "SELECT * FROM users WHERE age > ?"
+params = (25,)
+
+with ExecuteQuery("users.db", query, params) as results:
+    print("Results:", results)

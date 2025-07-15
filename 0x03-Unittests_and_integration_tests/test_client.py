@@ -10,15 +10,16 @@ from client import GithubOrgClient
 from unittest.mock import patch, PropertyMock
 
 
-
 class TestGithubOrgClient(unittest.TestCase):
     """Tests for GithubOrgClient class"""
 
-    @parameterized.expand([
-        ("google",),
-        ("abc",),
-    ])
-    @patch('client.get_json')
+    @parameterized.expand(
+        [
+            ("google",),
+            ("abc",),
+        ]
+    )
+    @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
         """Test that GithubOrgClient.org returns the correct value"""
         # Arrange
@@ -44,7 +45,6 @@ class TestGithubOrgClient(unittest.TestCase):
             result = client._public_repos_url
 
             self.assertEqual(result, "https://api.github.com/orgs/google/repos")
-
 
 
 if __name__ == "__main__":

@@ -160,6 +160,27 @@ class TestGithubOrgClient(unittest.TestCase):
 
 ---
 
+## 🧪 GithubOrgClient._public_repos_url (in `test_client.py`)
+
+### Purpose
+
+To verify that the private property `_public_repos_url` correctly retrieves the `repos_url` field from the `.org` property, which is memoized.
+
+### 🔍 Test Strategy
+
+- Use `unittest.mock.PropertyMock` via `patch` to mock the `.org` property of `GithubOrgClient`.
+- No real API call is made.
+- The test checks that the value returned by `_public_repos_url` matches the expected URL from the mocked `.org` payload.
+
+### Example Mocked Payload
+
+```python
+{
+    "repos_url": "https://api.github.com/orgs/google/repos"
+}
+```
+---
+
 ## 🧪 Running the Tests
 
 ```bash

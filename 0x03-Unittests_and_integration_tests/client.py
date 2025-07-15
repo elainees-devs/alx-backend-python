@@ -38,9 +38,7 @@ class GithubOrgClient:
         """Get list of public repositories"""
         if self._repos_data is None:
             self._repos_data = get_json(self._public_repos_url)
-        
         repos = [repo["name"] for repo in self._repos_data]
-        
         if license:
             repos = [
                 repo["name"] for repo in self._repos_data

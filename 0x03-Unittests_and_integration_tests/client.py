@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
-"""A github org client
+"""A GitHub org client
 """
-from typing import (
-    List,
-    Dict,
-)
+from typing import List, Dict
 
 from utils import (
     get_json,
@@ -14,46 +11,41 @@ from utils import (
 
 
 class GithubOrgClient:
-    """A Githib org client
-    """
+    """A GitHub org client"""
     ORG_URL = "https://api.github.com/orgs/{org}"
 
     def __init__(self, org_name: str) -> None:
-        """Init method of GithubOrgClient"""
         self._org_name = org_name
 
-    
+    @property
     @memoize
     def org(self) -> Dict:
-        """Memoize org"""
+        """Memoized property: org info"""
         return get_json(self.ORG_URL.format(org=self._org_name))
 
     @property
     def _public_repos_url(self) -> str:
-        """Public repos URL"""
+        """Return public repos URL"""
         return self.org["repos_url"]
 
+    @property
     @memoize
     def repos_payload(self) -> Dict:
-        """Memoize repos payload"""
+        """Memoized property: repos payload"""
         return get_json(self._public_repos_url)
 
     def public_repos(self, license: str = None) -> List[str]:
-        """Public repos"""
-        json_payload = self.repos_payload
+        """List of public repos, optionally filtered by license"""
         public_repos = [
-            repo["name"] for repo in json_payload
+            repo["name"] for repo in self.repos_payload
             if license is None or self.has_license(repo, license)
         ]
-
         return public_repos
 
     @staticmethod
     def has_license(repo: Dict[str, Dict], license_key: str) -> bool:
-        """Static: has_license"""
-        assert license_key is not None, "license_key cannot be None"
+        """Check if repo has a specific license"""
         try:
-            has_license = access_nested_map(repo, ("license", "key")) == license_key
+            return access_nested_map(repo, ("license", "key")) == license_key
         except KeyError:
             return False
-        return has_license

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Unit tests for GithubOrgClient.org
+Unit tests for GithubOrgClient
 """
 
 import unittest
@@ -72,19 +72,26 @@ class TestGithubOrgClient(unittest.TestCase):
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected)
 
-def test_public_repos(self):
-    """Test that public_repos returns expected repo names"""
-    client = GithubOrgClient("google")
-    self.assertEqual(client.public_repos, self.expected_repos)
+    @patch("client.get_json")
+    def test_public_repos_with_license(self, mock_get_json):
+        """Test that public_repos filters repos by license"""
+        self.repos_payload = [
+            {"name": "repo1", "license": {"key": "apache-2.0"}},
+            {"name": "repo2", "license": {"key": "mit"}},
+            {"name": "repo3", "license": {"key": "apache-2.0"}},
+        ]
+        self.apache2_repos = ["repo1", "repo3"]
+        mock_get_json.return_value = self.repos_payload
 
-def test_public_repos_with_license(self):
-    """Test that public_repos filters repos by license"""
-    client = GithubOrgClient("google")
-    filtered_repos = [
-        repo["name"] for repo in self.repos_payload
-        if repo.get("license", {}).get("key") == "apache-2.0"
-    ]
-    self.assertEqual(filtered_repos, self.apache2_repos)
+        with patch(
+            "client.GithubOrgClient._public_repos_url",
+            new_callable=PropertyMock
+        ) as mock_url:
+            mock_url.return_value = "https://api.github.com/orgs/google/repos"
+            client = GithubOrgClient("google")
+            result = client.public_repos(license="apache-2.0")
+            self.assertEqual(result, self.apache2_repos)
+
 
 if __name__ == "__main__":
     unittest.main()

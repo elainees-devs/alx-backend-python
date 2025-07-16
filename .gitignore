@@ -1,0 +1,13 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# SQLite database
+*.sqlite3
+
+# Environment
+venv/
+.env
+
+# VSCode (if used)
+.vscode/

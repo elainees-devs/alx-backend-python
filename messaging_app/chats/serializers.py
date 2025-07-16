@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from .models import User, Conversation, Message
 from django.utils.timesince import timesince
-from rest_framework.exceptions import ValidationError
+from rest_framework import serializers
+
 
 # ------------------------
 # User Serializer
@@ -46,5 +47,6 @@ class ConversationSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if not data.get('participants'):
-            raise ValidationError("A conversation must have at least one participant.")
+            raise serializers.ValidationError("A conversation must have at least one participant.")
         return data
+

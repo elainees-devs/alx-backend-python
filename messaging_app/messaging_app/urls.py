@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
-from messaging_app.chats import auth as jwt_auth
+from chats import auth as jwt_auth
 
 
 

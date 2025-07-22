@@ -14,16 +14,22 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from messaging_app.chats import auth as jwt_auth
+
+
 
 def root_view(request):
     return JsonResponse({"message": "Welcome to the Messaging API"})
 
+
 urlpatterns = [
-    path('', root_view),
-    path('admin/', admin.site.urls),
-    path('api/', include('chats.urls')),
-    path('api-auth/', include('rest_framework.urls')),
+    path("", root_view),
+    path("admin/", admin.site.urls),
+    path("api/", include("chats.urls")),
+    path("api-auth/", include("rest_framework.urls")), # Main API
+    path('api/auth/', include(jwt_auth)),    # JWT auth endpoints
 ]

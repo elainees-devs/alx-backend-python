@@ -2,7 +2,6 @@ from django.shortcuts import render
 from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import PermissionDenied
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsParticipantOfConversation
@@ -39,6 +38,7 @@ class MessageViewSet(viewsets.ModelViewSet):
                 "error": "You are not a participant in this conversation.",
                 "conversation_id": conversation_id
             }
-            raise PermissionDenied(detail=detail)
+            # Return Response with 403 FORBIDDEN status
+            return Response(detail, status=status.HTTP_403_FORBIDDEN)
 
         serializer.save(sender=self.request.user)

@@ -1,24 +1,26 @@
-from rest_framework import permissions
+from rest_framework.permissions import BasePermission
 
-class IsOwner(permissions.BasePermission):
+class IsParticipantOfConversation(BasePermission):
     """
-    Custom permission to only allow access to objects owned by the requesting user.
+    Allows access only to authenticated users who are participants in the conversation
+    or are the sender of the message.
     """
 
     def has_object_permission(self, request, view, obj):
-        """
-        Allow access if the user is the sender or a participant in the related conversation.
-        """
+        user = request.user
 
-        # Check if the request user is the sender
-        is_sender = getattr(obj, 'sender', None) == request.user
+        # Check if user is authenticated
+        if not user or not user.is_authenticated:
+            return False
 
-        # Check if the object has direct participants (e.g. Conversation)
+        # Allow if user is sender
+        is_sender = getattr(obj, 'sender', None) == user
+
+        # Check if user is participant
         if hasattr(obj, 'participants'):
-            is_participant = request.user in obj.participants.all()
-        # Check if the object has a conversation with participants (e.g. Message)
+            is_participant = user in obj.participants.all()
         elif hasattr(obj, 'conversation') and hasattr(obj.conversation, 'participants'):
-            is_participant = request.user in obj.conversation.participants.all()
+            is_participant = user in obj.conversation.participants.all()
         else:
             is_participant = False
 

@@ -3,9 +3,9 @@ from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-from models import Conversation, Message
-from serializers import ConversationSerializer, MessageSerializer
-from permissions import IsParticipantOfConversation  
+from .models import Conversation, Message
+from .serializers import ConversationSerializer, MessageSerializer
+from .permissions import IsParticipantOfConversation
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
@@ -32,8 +32,13 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         conversation = serializer.validated_data.get('conversation')
+        conversation_id = conversation.id if conversation else None
 
         if self.request.user not in conversation.participants.all():
-            raise PermissionDenied(detail="You are not a participant in this conversation.")
+            detail = {
+                "error": "You are not a participant in this conversation.",
+                "conversation_id": conversation_id
+            }
+            raise PermissionDenied(detail=detail)
 
         serializer.save(sender=self.request.user)

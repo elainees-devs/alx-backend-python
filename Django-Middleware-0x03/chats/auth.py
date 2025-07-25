@@ -1,8 +1,7 @@
 # Importing views for obtaining and refreshing JWT tokens from the Simple JWT package
-from rest_framework_simplejwt import (
-    TokenObtainPairView,  # View that returns access and refresh tokens when given valid user credentials
-    TokenRefreshView,     # View that returns a new access token when given a valid refresh token
-)
+# type: ignore
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 
 # Importing Django's path function to define URL patterns
 from django.urls import path

@@ -1,13 +1,14 @@
+
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from models import Conversation, Message
-from serializers import ConversationSerializer, MessageSerializer
-from permissions import IsParticipantOfConversation
-from pagination import MessagePagination
-from filters import MessageFilters
+from .models import Conversation, Message
+from .serializers import ConversationSerializer, MessageSerializer
+from .permissions import IsParticipantOfConversation
+from .pagination import MessagePagination
+from .filters import MessageFilters
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer

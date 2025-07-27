@@ -76,3 +76,24 @@ class OffensiveLanguageMiddleware:
 
 "chats.middleware.OffensiveLanguageMiddleware",
 
+
+class RolePermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Define paths that require elevated permissions
+        protected_paths = [
+            '/chats/admin-actions/',  # Example protected path
+        ]
+
+        if any(request.path.startswith(path) for path in protected_paths):
+            user = request.user
+            if not user.is_authenticated:
+                return HttpResponseForbidden("Authentication required.")
+
+            # Check if the user has an allowed role
+            if getattr(user, 'role', None) not in ['admin', 'moderator']:
+                return HttpResponseForbidden("You do not have permission to perform this action.")
+
+        return self.get_response(request)

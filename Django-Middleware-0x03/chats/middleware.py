@@ -72,9 +72,7 @@ class OffensiveLanguageMiddleware:
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
-    
 
-"chats.middleware.OffensiveLanguageMiddleware",
 
 
 class RolePermissionMiddleware:

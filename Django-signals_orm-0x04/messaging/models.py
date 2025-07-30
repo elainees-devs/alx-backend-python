@@ -23,7 +23,10 @@ class Notification(models.Model):
 class MessageHistory(models.Model):
     message = models.ForeignKey(Message, related_name='history')
     old_content = models.TextField()
+    edited_by = models.ForeignKey(User, related_name='edited_messages', on_delete=models.CASCADE, null=True, blank=True)
     edited_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'History for Message ID {self.message.id} at {self.edited_at}'
+        return f'History for Message ID {self.message.id} edited by {self.edited_by} at {self.edited_at}'
+
+

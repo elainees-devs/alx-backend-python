@@ -1,8 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.models import User
-from .models import Message  # Ensure your Message model is imported
+from .models import Message, Conversation 
+from django.views.decorators.cache import cache_page
+
 
 @login_required
 def user_inbox(request):
@@ -51,3 +53,16 @@ def delete_user(request):
     logout(request)
     sender.delete()  # Triggers post_delete signal
     return redirect('home')
+
+@cache_page(60)
+def conversation_messages(request, conversation_id):
+    """
+    Display a list of messages in a conversation.
+    The view is cached for 60 seconds to reduce DB hits.
+    """
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    messages = Message.objects.filter(conversation=conversation).order_by('-timestamp')
+    return render(request, 'chats/conversation_messages.html', {
+        'conversation': conversation,
+        'messages': messages
+    })

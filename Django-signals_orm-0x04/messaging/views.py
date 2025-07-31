@@ -1,8 +1,26 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
 from .models import Message  # Ensure your Message model is imported
+
+@login_required
+def user_inbox(request):
+    """
+    Displays unread messages for the logged-in user.
+    Uses .only() to optimize DB query to fetch only needed fields.
+    """
+    user = request.user
+
+    # Efficiently get unread messages using custom manager
+    unread_messages = Message.unread.for_user(user).only('content', 'sender__username')
+
+    # Example: log unread messages
+    for msg in unread_messages:
+        print(f"Unread: {msg.content} from {msg.sender.username}")
+
+    return render(request, 'inbox.html', {'unread_messages': unread_messages})
+
 
 @login_required
 def delete_user(request):
@@ -14,7 +32,7 @@ def delete_user(request):
     sender = request.user
 
     # Optimize message query to minimize DB hits before deletion
-    messages = Message.objects.filter(sender, parent_message__isnull=True)\
+    messages = Message.objects.filter(sender=sender, parent_message__isnull=True)\
         .select_related('sender', 'receiver')\
         .prefetch_related(
             'replies',                    # Direct replies
@@ -25,8 +43,10 @@ def delete_user(request):
             'replies__replies__receiver'  # Receiver of replies to replies
         )
 
-    # (Optional) You could log, archive, or process messages before deletion
+    # Optional: process or log messages before deletion
+    for msg in messages:
+        print(f"Message: {msg.content} - Replies: {msg.replies.count()}")
 
     logout(request)
-    sender.delete()  # Triggers cleanup via post_delete signal
+    sender.delete()  # Triggers post_delete signal
     return redirect('home')

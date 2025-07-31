@@ -11,10 +11,10 @@ def delete_user(request):
     using select_related and prefetch_related, deletes the user account,
     and redirects to the home page.
     """
-    user = request.user
+    sender = request.user
 
     # Optimize message query to minimize DB hits before deletion
-    messages = Message.objects.filter(sender=user, parent_message__isnull=True)\
+    messages = Message.objects.filter(sender, parent_message__isnull=True)\
         .select_related('sender', 'receiver')\
         .prefetch_related(
             'replies',                    # Direct replies
@@ -28,5 +28,5 @@ def delete_user(request):
     # (Optional) You could log, archive, or process messages before deletion
 
     logout(request)
-    user.delete()  # Triggers cleanup via post_delete signal
+    sender.delete()  # Triggers cleanup via post_delete signal
     return redirect('home')

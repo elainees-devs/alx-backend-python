@@ -1,6 +1,6 @@
 from django.db import models
 
-class UnreadMessageManager(models.Manager):
+class UnreadMessagesManager(models.Manager):
     def for_user(self, user):
         return self.get_queryset().filter(
             receiver=user,

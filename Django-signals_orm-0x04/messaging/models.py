@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from .managers import UnreadMessageManager
+from .managers import UnreadMessagesManager
 
   
 class Message(models.Model):
@@ -15,7 +15,7 @@ class Message(models.Model):
 
     # Manager for unread messages
     objects = models.Manager()  # Default manager
-    unread = UnreadMessageManager()  # Custom manager for unread messages
+    unread = UnreadMessagesManager()  # Custom manager for unread messages
 
     def get_all_replies(self):
         """

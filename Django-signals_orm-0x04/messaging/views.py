@@ -13,7 +13,8 @@ def user_inbox(request):
     user = request.user
 
     # Efficiently get unread messages using custom manager
-    unread_messages = Message.unread.for_user(user).only('content', 'sender__username')
+    unread_messages = Message.unread.unread_for_user(user).only('content', 'sender__username')
+
 
     # Example: log unread messages
     for msg in unread_messages:

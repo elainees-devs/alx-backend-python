@@ -8,6 +8,25 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     edited = models.BooleanField(default=False) # Indicates if the message has been edited
 
+    # Self-referential FK for threaded replies
+    parent_message = models.ForeignKey('self', related_name='replies', on_delete=models.CASCADE, null=True, blank=True)
+
+
+    def get_all_replies(self):
+        """
+        Recursively fetch all replies for this message.
+        """
+        all_replies = []
+
+        def fetch_replies(message):
+            for reply in message.replies.all():
+                all_replies.append(reply)
+                fetch_replies(reply)
+
+        fetch_replies(self)
+        return all_replies
+
+
     def __str__(self):
         return f'Message from {self.sender.username} to {self.receiver.username} at {self.timestamp}'
     

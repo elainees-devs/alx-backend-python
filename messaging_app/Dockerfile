@@ -26,3 +26,7 @@ EXPOSE 8000
 # Default command to run Django
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
 
+
+# running the server
+#docker run -p 8000:8000 messaging-api
+

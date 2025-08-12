@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-messaging-app-green
+  labels:
+    app: django-messaging-app
+    version: green
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: django-messaging-app
+      version: green
+  template:
+    metadata:
+      labels:
+        app: django-messaging-app
+        version: green
+    spec:
+      containers:
+        - name: django-messaging-app
+          image: elainees/django-messaging-app:green-version  # Use new version image tag here
+          ports:
+            - containerPort: 8000

@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# kurbeScript: Start local Kubernetes cluster with Minikube and verify status
+
+# Function to check if a command exists
+command_exists () {
+    command -v "$1" >/dev/null 2>&1
+}
+
+echo "Checking if Minikube is installed..."
+if ! command_exists minikube ; then
+    echo "Minikube not found. Please install Minikube first."
+    exit 1
+fi
+
+echo "Checking if kubectl is installed..."
+if ! command_exists kubectl ; then
+    echo "kubectl not found. Please install kubectl first."
+    exit 1
+fi
+
+echo "Starting Minikube cluster..."
+minikube start
+
+echo "Checking cluster info..."
+kubectl cluster-info
+
+echo "Retrieving available pods in all namespaces..."
+kubectl get pods --all-namespaces
+

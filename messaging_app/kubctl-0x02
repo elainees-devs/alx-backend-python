@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Apply blue deployment and service (initial live version)
+kubectl apply -f blue_deployment.yaml
+kubectl apply -f kubeservice.yaml
+
+echo "Blue deployment and service applied."
+
+# Wait for blue pods to be ready
+kubectl rollout status deployment/django-messaging-app-blue
+
+# Apply green deployment (new version)
+kubectl apply -f green_deployment.yaml
+
+echo "Green deployment applied."
+
+# Wait for green pods to be ready
+kubectl rollout status deployment/django-messaging-app-green
+
+# Check logs of green pods for errors
+green_pods=$(kubectl get pods -l app=django-messaging-app,version=green -o jsonpath="{.items[*].metadata.name}")
+
+for pod in $green_pods; do
+  echo "Logs for pod $pod:"
+  kubectl logs $pod | grep -i error || echo "No errors found in $pod logs."
+done
+
+# Switch service selector from blue to green to direct traffic to new version
+kubectl patch service django-messaging-app-service -p '{"spec":{"selector":{"app":"django-messaging-app","version":"green"}}}'
+
+echo "Service switched to green deployment."
+
+# Optionally, clean up blue deployment after validation
+# kubectl delete -f blue_deployment.yaml

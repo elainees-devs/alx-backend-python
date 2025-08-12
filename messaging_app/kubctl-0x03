@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Apply the updated blue deployment to trigger rolling update
+kubectl apply -f blue_deployment.yaml
+
+echo "Triggered rolling update with new image version."
+
+# Monitor the rollout status
+kubectl rollout status deployment/django-messaging-app-blue
+
+echo "Rollout complete."
+
+# Function to test if the app is reachable (replace URL with your actual service URL)
+SERVICE_URL="http://localhost:8000"  # Change if needed
+
+echo "Testing app availability with curl..."
+
+# Test for 60 seconds, sending one request every second
+for i in {1..60}
+do
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL)
+    if [ "$HTTP_STATUS" -ne 200 ]; then
+        echo "Request $i: App not reachable (status code: $HTTP_STATUS)"
+    else
+        echo "Request $i: App reachable (status code: $HTTP_STATUS)"
+    fi
+    sleep 1
+done
+
+# Verify pods after update
+echo "Current pods status:"
+kubectl get pods -l app=django-messaging-app-blue

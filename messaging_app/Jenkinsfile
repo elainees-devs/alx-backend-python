@@ -8,7 +8,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Pull the code from GitHub (handled by Jenkins job SCM settings)
                 checkout scm
             }
         }
@@ -33,14 +32,9 @@ pipeline {
             }
             post {
                 always {
-                    // Publish the pytest results in Jenkins
                     junit 'report.xml'
                 }
             }
         }
-    }
-
-    triggers {
-        // Manual trigger only (run from Jenkins dashboard)
     }
 }

@@ -13,9 +13,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(dotenv_path=BASE_DIR / '.env')
 
 LOGIN_REDIRECT_URL = "/admin/"
 
@@ -84,13 +87,17 @@ WSGI_APPLICATION = "messaging_app.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('MYSQL_DATABASE'),
-        'USER': os.environ.get('MYSQL_USER'),
-        'PASSWORD': os.environ.get('MYSQL_PASSWORD'),
-        'HOST': os.environ.get('MYSQL_HOST'),
-        'PORT': os.environ.get('MYSQL_PORT', 3306),
+        'NAME': os.environ['MYSQL_DB'],       # Note: no get(), use [] to force error if missing
+        'USER': os.environ['MYSQL_USER'],
+        'PASSWORD': os.environ['MYSQL_PASSWORD'],
+        'HOST': os.environ['MYSQL_HOST'],     # e.g. 'db'
+        'PORT': os.environ.get('MYSQL_DB_PORT', '3306'),  # port can fallback if you want
     }
 }
+
+print("DEBUG: MYSQL_DB env var =", os.environ.get('MYSQL_DB'))
+print("DEBUG: DATABASES['default']['NAME'] =", os.environ['MYSQL_DB'])
+
 
 
 # Password validation

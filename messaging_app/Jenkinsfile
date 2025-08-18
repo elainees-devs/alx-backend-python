@@ -1,33 +1,22 @@
 pipeline {
     agent {
         docker {
-            image 'python:3.11-slim'
-            args '-u root:root' // allows installing dependencies
+            image 'python:3.10'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
     stages {
-        stage('Checkout') {
+        stage('Setup') {
             steps {
-                checkout scm
+                sh 'python --version'
+                sh 'python -m venv venv'
+                sh '. venv/bin/activate && pip install --upgrade pip'
+                sh '. venv/bin/activate && pip install -r messaging_app/requirements.txt'
             }
         }
-        stage('Setup Python') {
+        stage('Tests') {
             steps {
-                sh '''
-                    python --version
-                    python -m venv venv
-                    . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                '''
-            }
-        }
-        stage('Run Tests') {
-            steps {
-                sh '''
-                    . venv/bin/activate
-                    python manage.py test
-                '''
+                sh '. venv/bin/activate && pytest'
             }
         }
     }

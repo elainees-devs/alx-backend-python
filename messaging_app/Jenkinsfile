@@ -1,39 +1,33 @@
 pipeline {
-    agent any
-
-    environment {
-        PYTHON = 'python3'
+    agent {
+        docker {
+            image 'python:3.11-slim'
+            args '-u root:root' // allows installing dependencies
+        }
     }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
         stage('Setup Python') {
             steps {
                 sh '''
-                    python3 -m venv venv
-                    source venv/bin/activate
+                    python --version
+                    python -m venv venv
+                    . venv/bin/activate
                     pip install --upgrade pip
-                    pip install -r messaging_app/requirements.txt
+                    pip install -r requirements.txt
                 '''
             }
         }
-
         stage('Run Tests') {
             steps {
                 sh '''
-                    source venv/bin/activate
-                    pytest messaging_app/tests/ --junitxml=report.xml
+                    . venv/bin/activate
+                    python manage.py test
                 '''
-            }
-            post {
-                always {
-                    junit 'report.xml'
-                }
             }
         }
     }

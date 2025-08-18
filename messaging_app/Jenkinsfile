@@ -6,13 +6,11 @@ pipeline {
     }
 
     stages {
-        stage('Check GitHub Credentials') {
+        stage('Checkout Code') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'github-creds', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-                    sh '''
-                        echo "✅ GitHub credentials found for user: $GIT_USER"
-                    '''
-                }
+                git branch: 'main',
+                    credentialsId: 'github-creds',
+                    url: 'https://github.com/elainees-devs/alx-backend-python.git'
             }
         }
 
@@ -31,21 +29,13 @@ pipeline {
             }
         }
 
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main',
-                    credentialsId: 'github-creds',
-                    url: 'https://github.com/elainees-devs/alx-backend-python.git'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh '''
                     python -m venv venv
                     . venv/bin/activate
-                    pip install --upgrade pip
-                    pip install -r messaging_app/requirements.txt
+                    pip3 install --upgrade pip
+                    pip3 install -r messaging_app/requirements.txt
                 '''
             }
         }

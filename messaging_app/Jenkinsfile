@@ -11,9 +11,9 @@ pipeline {
         VENV_DIR = "${WORKSPACE}/venv"
     }
 
-    // options {
-    //     skipDefaultCheckout()
-    // }
+    options {
+        skipDefaultCheckout()
+    }
 
     stages {
 
@@ -34,8 +34,7 @@ pipeline {
                 checkout([$class: 'GitSCM', 
                     branches: [[name: 'main']], 
                     userRemoteConfigs: [[
-                        url: 'https://github.com/elainees-devs/alx-backend-python.git',
-                        credentialsId: 'github-creds'
+                        url: 'https://github.com/elainees-devs/alx-backend-python.git'
                     ]]
                 ])
             }

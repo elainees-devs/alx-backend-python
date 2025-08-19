@@ -17,12 +17,6 @@ pipeline {
 
     stages {
 
-        stage('Clean Workspace') {
-            steps {
-                deleteDir()
-            }
-        }
-
         stage('Install Git') {
             steps {
                 sh 'apt-get update && apt-get install -y git'

@@ -10,9 +10,9 @@ pipeline {
         VENV_DIR = "${WORKSPACE}/venv"
     }
 
-    options {
-        skipDefaultCheckout()
-    }
+    // options {
+    //     skipDefaultCheckout()
+    // }
 
     stages {
 

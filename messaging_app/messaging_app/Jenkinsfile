@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         VENV_DIR = "${WORKSPACE}/venv"
-        GIT_CREDENTIALS = 'github-creds' // replace with your actual Jenkins credentials ID
+        GIT_CREDENTIALS = 'github-creds'
         REPO_URL = 'https://github.com/elainees-devs/alx-backend-python.git'
         BRANCH_NAME = 'main'
     }
@@ -27,49 +27,61 @@ pipeline {
             }
         }
 
-        stage('Checkout Code') {
+        stage('Checkout Code with Branch') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: env.BRANCH_NAME]],
-                    userRemoteConfigs: [[
-                        url: env.REPO_URL,
-                        credentialsId: env.GIT_CREDENTIALS
-                    ]]
-                ])
+                withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIALS,
+                                                  usernameVariable: 'GIT_USER',
+                                                  passwordVariable: 'GIT_PASS')]) {
+                    sh '''
+                        # Remove old repo if exists
+                        rm -rf messaging_app
+
+                        # Clone the repo
+                        git clone https://${GIT_USER}:${GIT_PASS}@${REPO_URL#https://} messaging_app
+                        cd messaging_app
+
+                        # Explicitly create local branch tracking remote
+                        git branch ${BRANCH_NAME} origin/${BRANCH_NAME}
+
+                        # Switch to the branch
+                        git checkout ${BRANCH_NAME}
+                    '''
+                }
             }
         }
 
-        stage('Validate Jenkinsfile') {
+        stage('Validate Jenkinsfile and Requirements') {
             steps {
                 script {
                     if (!fileExists('messaging_app/Jenkinsfile')) {
                         error("❌ messaging_app/Jenkinsfile does not exist!")
                     }
-                    def jfContent = readFile('messaging_app/Jenkinsfile').trim()
-                    if (jfContent.isEmpty()) {
+                    if (readFile('messaging_app/Jenkinsfile').trim().isEmpty()) {
                         error("❌ messaging_app/Jenkinsfile is empty!")
                     }
-                    echo "✅ messaging_app/Jenkinsfile exists and is not empty."
+                    if (!fileExists('messaging_app/requirements.txt')) {
+                        error("❌ requirements.txt not found!")
+                    }
+                    echo "✅ Jenkinsfile and requirements.txt are present."
                 }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Setup Python Environment & Run Tests') {
             steps {
                 sh '''
+                    # Remove previous venv if it exists
+                    rm -rf $VENV_DIR
+
+                    # Create and activate virtual environment
                     python3 -m venv $VENV_DIR
                     . $VENV_DIR/bin/activate
-                    pip3 install --upgrade pip
-                    pip3 install -r messaging_app/requirements.txt
-                '''
-            }
-        }
 
-        stage('Run Tests') {
-            steps {
-                sh '''
-                    . $VENV_DIR/bin/activate
+                    # Upgrade pip and install dependencies
+                    pip install --upgrade pip
+                    pip install -r messaging_app/requirements.txt
+
+                    # Run tests and generate JUnit XML report
                     pytest --junitxml=test-results.xml || exit 1
                 '''
             }

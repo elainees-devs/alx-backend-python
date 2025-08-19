@@ -1,0 +1,67 @@
+name: Django CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DB }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    env:
+      DATABASE_NAME: ${{ secrets.MYSQL_DB }}
+      DATABASE_USER: ${{ secrets.MYSQL_USER }}
+      DATABASE_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_PORT: 3306
+      DJANGO_SETTINGS_MODULE: messaging_app.settings
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip3 install -r messaging_app/requirements.txt
+          pip3 install mysqlclient
+
+      - name: Wait for MySQL
+        run: |
+          for i in {30..0}; do
+            if mysqladmin ping -h127.0.0.1 -P3306 -u$DATABASE_USER -p$DATABASE_PASSWORD >/dev/null 2>&1; then
+              break
+            fi
+            echo 'Waiting for MySQL...'
+            sleep 1
+          done
+
+      - name: Run Django tests
+        run: |
+          python3 manage.py migrate
+          python3 manage.py test

@@ -67,8 +67,8 @@ pipeline {
                     rm -rf $VENV_DIR
                     python3 -m venv $VENV_DIR
                     . $VENV_DIR/bin/activate
-                    pip install --upgrade pip
-                    pip install -r messaging_app/requirements.txt
+                    pip3 install --upgrade pip
+                    pip3 install -r messaging_app/requirements.txt
                     pytest --junitxml=test-results.xml || exit 1
                 '''
             }

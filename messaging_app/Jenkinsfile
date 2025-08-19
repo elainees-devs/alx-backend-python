@@ -2,12 +2,19 @@ pipeline {
     agent {
         docker {
             image 'python:3.10'
+            args '-u root:root' // run as root to avoid permission issues
         }
     }
 
+    environment {
+        VENV_DIR = "${WORKSPACE}/venv"
+    }
+
     stages {
+
         stage('Checkout Code') {
             steps {
+                cleanWs() // ensure workspace is clean
                 git branch: 'main',
                     credentialsId: 'github-creds',
                     url: 'https://github.com/elainees-devs/alx-backend-python.git'
@@ -32,10 +39,10 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                    python -m venv venv
-                    . venv/bin/activate
-                    pip3 install --upgrade pip
-                    pip3 install -r messaging_app/requirements.txt
+                    python -m venv $VENV_DIR
+                    . $VENV_DIR/bin/activate
+                    pip install --upgrade pip
+                    pip install -r messaging_app/requirements.txt
                 '''
             }
         }
@@ -43,8 +50,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 sh '''
-                    . venv/bin/activate
-                    pytest --junitxml=test-results.xml
+                    . $VENV_DIR/bin/activate
+                    pytest --junitxml=test-results.xml || exit 1
                 '''
             }
             post {

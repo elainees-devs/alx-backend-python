@@ -10,14 +10,33 @@ pipeline {
         VENV_DIR = "${WORKSPACE}/venv"
     }
 
+    options {
+        skipDefaultCheckout()
+    }
+
     stages {
+
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Install Git') {
+            steps {
+                sh 'apt-get update && apt-get install -y git'
+            }
+        }
 
         stage('Checkout Code') {
             steps {
-                cleanWs() // ensure workspace is clean
-                git branch: 'main',
-                    credentialsId: 'github-creds',
-                    url: 'https://github.com/elainees-devs/alx-backend-python.git'
+                checkout([$class: 'GitSCM', 
+                    branches: [[name: 'main']], 
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/elainees-devs/alx-backend-python.git',
+                        credentialsId: 'github-creds'
+                    ]]
+                ])
             }
         }
 
